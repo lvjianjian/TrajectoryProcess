@@ -18,7 +18,7 @@ class Route (_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long) ex
     private var frequency:Long = 1 //it record the frequency of the route
     private var edge_num = _edge_ids.length//it record the num of edges in this route
     private var expandRoutes:List[ExpandRoute] = Nil
-
+    var vertex_ids:Array[Long] = _
     def setRouteId(routeid:Long): Unit ={
         route_id = routeid
     }
@@ -69,6 +69,7 @@ class Route (_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long) ex
         //all edges are same
         return true
     }
+
 
 
     override def toString: String = {

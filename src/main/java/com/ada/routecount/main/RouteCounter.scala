@@ -57,30 +57,27 @@ object RouteCounter extends Logging {
         //Route.resetRouteId(route_merged_RDD)
 
         //find each route's expandroute
-       val route_merged_broadcast: Broadcast[Map[(Long, Long), Iterable[Route]]] = sc.broadcast(route_merged_RDD.collect().toMap)
-        route_merged_RDD.map{
-            x =>
-                val route_merged_and_found_list = Nil
-                val start_vertex_id = x._1._1
-                val end_vertex_id = x._1._2
-                val routes = x._2
-                val compare_routes: Map[(Long, Long), Iterable[Route]] = route_merged_broadcast.value
-                //search expandroute for each route
-                compare_routes.foreach{
-                    x =>
-                        val compare_s_v_id = x._1._1
-                        val compare_e_v_id = x._1._2
-                        //exist end or start vertex not same
-                        if(start_vertex_id != compare_s_v_id || end_vertex_id != compare_e_v_id){
-                            route_merged_and_found_list
-
-                        }
-                }
-        }
+//       val route_merged_broadcast: Broadcast[Map[(Long, Long), Iterable[Route]]] = sc.broadcast(route_merged_RDD.collect().toMap)
+//        route_merged_RDD.map{
+//            x =>
+//                val route_merged_and_found_list :List[Route] = x._2.toList
+//                val start_vertex_id = x._1._1
+//                val end_vertex_id = x._1._2
+//                val routes = x._2
+//                val compare_routes: Map[(Long, Long), Iterable[Route]] = route_merged_broadcast.value
+//                //search expandroute for each route
+//                compare_routes.foreach{
+//                    x =>
+//                        val compare_s_v_id = x._1._1
+//                        val compare_e_v_id = x._1._2
+//                        //exist end or start vertex not same,
+//                        // it means if start and end vertex are same ,it can't be expand route
+//                        if(start_vertex_id != compare_s_v_id || end_vertex_id != compare_e_v_id){
+//                            x._2.filter(route=>route)
+//                        }
+//                }
+//        }
 
     }
-
-
-
 }
 
