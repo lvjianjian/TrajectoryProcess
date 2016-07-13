@@ -6,19 +6,26 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 
 import scala.beans.BeanProperty
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by lzj on 2016/7/10.
   */
 class Route (_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long) extends Serializable {
     var edge_ids = _edge_ids
+    var vertex_ids:Array[Long] = _
     var start_vertex_id = _start_vertex_id
     var end_vertex_id = _end_vertex_id
     private var route_id:Long = 0
     private var frequency:Long = 1 //it record the frequency of the route
     private var edge_num = _edge_ids.length//it record the num of edges in this route
     private var expandRoutes:List[ExpandRoute] = Nil
-    var vertex_ids:Array[Long] = _
+
+    def this(_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long,_vertex_ids:Array[Long]){
+        this(_edge_ids,_start_vertex_id,_end_vertex_id)
+        vertex_ids = _vertex_ids
+    }
+
     def setRouteId(routeid:Long): Unit ={
         route_id = routeid
     }
@@ -28,6 +35,10 @@ class Route (_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long) ex
       * route frequency + 1
       */
     def count(){addRouteFrequency(1)}
+
+    def setFrequencyToZero(): Unit ={
+        frequency = 0
+    }
 
     /**
      * set frequency = route old frequency + addfrequency_value
@@ -51,6 +62,7 @@ class Route (_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long) ex
 
     /**
      * judge self and route is the same route,if the edges are same ,return true,otherwise return false
+     * judge by edges
      * @param route
      * @return
      */
@@ -70,6 +82,71 @@ class Route (_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long) ex
         return true
     }
 
+    /**
+     * judge route whether contains sub route
+     * judge by edges
+     * @param sub_edge_ids
+     * @return contains sub_route return true otherwise false
+     */
+    def containsSubRoute(sub_edge_ids:Array[Long]):Boolean = {
+        if(getEdgeNum() < sub_edge_ids.length)
+            return false
+        //get first edge's index in route
+        val first_edge_index: Int = edge_ids.indexOf(sub_edge_ids(0))
+        if(first_edge_index == -1)
+            return false
+        else if(first_edge_index + sub_edge_ids.length > getEdgeNum())
+            return false
+        else{
+            for (i <- 0 until(sub_edge_ids.length)){
+                if(sub_edge_ids(i) != edge_ids(first_edge_index + i))
+                    return false
+            }
+        }
+        true
+    }
+
+
+    /**
+     * judge the route whether contains vertex
+     * @param vertex_id
+     * @return
+     */
+    def containsVertex(vertex_id:Long): Boolean ={
+        if(vertex_ids == null)
+            throw new RuntimeException("vertex_ids is null,you can't call this function")
+        vertex_ids.foreach{
+            id => if(id == vertex_id)
+                return true
+        }
+        false
+    }
+
+
+    /**
+     * judge route whether contains start and end vertex(direction into consideration)
+     * @param start_vertex_id
+     * @param end_vertex_id
+     * @return
+     */
+    def containsStartAndEndVertex(start_vertex_id:Long,end_vertex_id:Long) : Boolean={
+        if(vertex_ids == null)
+            throw new RuntimeException("vertex_ids is null,you can't call this function")
+        var hasFoundStart = false
+        vertex_ids.foreach{
+            id =>
+              if(!hasFoundStart) {
+                  //not find start_vertex
+                  if (id == start_vertex_id)
+                      hasFoundStart = true
+              }
+              else//has found start_vertex,then find end_vertex
+                if(id == end_vertex_id)
+                    return true
+        }
+        false
+    }
+
 
 
     override def toString: String = {
@@ -81,6 +158,7 @@ class Route (_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long) ex
 object Route{
     def apply(edge_ids: Array[Long], start_vertex_id: Long, end_vertex_id: Long): Route = new Route(edge_ids, start_vertex_id, end_vertex_id)
 
+    def apply(_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long,_vertex_ids:Array[Long]):Route = new Route(_edge_ids, _start_vertex_id, _end_vertex_id,_vertex_ids)
     /**
      * transform trajs to routes
      * @param trajs_RDD RDD[traj_id,Array(edge_ids)]
@@ -93,7 +171,14 @@ object Route{
                 val edges_ids: Array[Long] = traj._2
                 val start_vertex_id = edges_broadcast.value(edges_ids(0))._1
                 val end_vertex_id = edges_broadcast.value(edges_ids(edges_ids.length - 1))._2
-                val route = Route(edges_ids,start_vertex_id,end_vertex_id)
+                val vertex_ids = ArrayBuffer[Long]()
+                edges_ids.foreach{//get start_vertex of each edge
+                    edge_id =>
+                        vertex_ids += edges_broadcast.value(edge_id)._1
+                }
+                //add the last i.e. end-vertex_id
+                vertex_ids += end_vertex_id
+                val route = Route(edges_ids,start_vertex_id,end_vertex_id,vertex_ids.toArray)
                 route.setRouteId(traj._1)
                 ((start_vertex_id,end_vertex_id),route)
         }
