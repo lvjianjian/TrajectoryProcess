@@ -25,10 +25,12 @@ object RouteCounter extends Logging {
 //        val edge_data_path: String = "D:\\lzj_spark_test\\edges_new.txt"
 //        val route_result_path: String = "D:\\lzj_spark_test\\data\\route_result.txt"
 //        val route_path: String = "D:\\lzj_spark_test\\data\\route.txt"
+
         val traj_data_path: String = "hdfs://node1:9000/user/caojiaqing/JqCao/data/trajectory_beijing_new.txt"
         val edge_data_path: String = "hdfs://node1:9000/user/caojiaqing/JqCao/data/edges_new.txt"
         val route_result_path: String = "/home/liyang/lvzhongjian/result/route_result.txt"
         val route_path: String = "/home/liyang/lvzhongjian/result/routes.txt"
+        val route_frequency_path = "/home/liyang/lvzhongjian/result/route_frequency.txt"
 
         val trajUtil = new Trajectory(sc)
         //get trajs_RDD
