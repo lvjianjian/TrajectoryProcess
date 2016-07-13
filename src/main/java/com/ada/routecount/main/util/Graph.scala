@@ -1,5 +1,6 @@
-package com.ada.routecount.main
+package com.ada.routecount.main.util
 
+import com.ada.routecount.main.model.{Point, Vertex}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, SparkContext}
 

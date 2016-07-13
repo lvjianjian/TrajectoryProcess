@@ -1,4 +1,6 @@
-package com.ada.routecount.main
+package com.ada.routecount.main.util
+
+import com.ada.routecount.main.model.Point
 
 /**
  * Created by JQ-Cao on 2016/5/16.

@@ -1,4 +1,4 @@
-package com.ada.routecount.main
+package com.ada.routecount.main.model
 
 /**
  * Created by JQ-Cao on 2016/3/9.

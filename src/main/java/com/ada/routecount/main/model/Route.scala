@@ -1,11 +1,9 @@
-package com.ada.routecount.main
+package com.ada.routecount.main.model
 
-import java.util
-
+import com.ada.routecount.main.util.Trajectory
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 
-import scala.beans.BeanProperty
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -132,19 +130,7 @@ class Route (_edge_ids:Array[Long],_start_vertex_id:Long,_end_vertex_id:Long) ex
     def containsStartAndEndVertex(start_vertex_id:Long,end_vertex_id:Long) : Boolean={
         if(vertex_ids == null)
             throw new RuntimeException("vertex_ids is null,you can't call this function")
-        var hasFoundStart = false
-        vertex_ids.foreach{
-            id =>
-              if(!hasFoundStart) {
-                  //not find start_vertex
-                  if (id == start_vertex_id)
-                      hasFoundStart = true
-              }
-              else//has found start_vertex,then find end_vertex
-                if(id == end_vertex_id)
-                    return true
-        }
-        false
+        Trajectory.containsStartAndEndVertex(vertex_ids,start_vertex_id,end_vertex_id)
     }
 
 

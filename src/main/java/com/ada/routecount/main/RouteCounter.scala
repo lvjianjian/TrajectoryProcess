@@ -2,6 +2,8 @@ package com.ada.routecount.main
 
 import java.io.{File, FileWriter}
 
+import com.ada.routecount.main.model.{Route, ExpandRoute}
+import com.ada.routecount.main.util.{Graph, Trajectory}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Accumulator, Logging, SparkConf, SparkContext}
