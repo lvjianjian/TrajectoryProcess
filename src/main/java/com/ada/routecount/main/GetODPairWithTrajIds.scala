@@ -9,7 +9,7 @@ import org.apache.spark.{SparkContext, SparkConf, Logging}
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Created by JQ-Cao on 2016/7/13.
+ * Created by lzj on 2016/7/13.
  */
 
 /**
@@ -21,17 +21,15 @@ object GetODPairWithTrajIds extends Logging {
 //  val route_result_path: String = "D:\\lzj_spark_test\\data\\route_result.txt"
 //  val route_path: String = "D:\\lzj_spark_test\\data\\route.txt"
 //  val od_pair_count_result: String = "D:\\lzj_spark_test\\data\\OD_Pair_Trajs.txt"
-  val traj_data_path: String = "hdfs://node1:9000/user/caojiaqing/JqCao/data/trajectory_beijing_new.txt"
-  val edge_data_path: String = "hdfs://node1:9000/user/caojiaqing/JqCao/data/edges_new.txt"
+
   val od_pair_count_result: String = "/home/liyang/lvzhongjian/result/OD_Pair_TrajsCount.txt"
   val od_pair_traj_result = "/home/liyang/lvzhongjian/result/OD_Pair_Trajs.txt"
-  val HDFS_BASE_RESULT_PATH = "/user/lvzhongjian/result/"
 
 
 
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("GetODPairWithTrajIds")
-    //    conf.set("fs.hdfs.impl.disable.cache", "true")
+//    conf.set("fs.hdfs.impl.disable.cache", "true")
 //    conf.setMaster("local[3]")
     conf.set("spark.driver.maxResultSize", "30g")
     val sc = new SparkContext(conf)
@@ -39,19 +37,19 @@ object GetODPairWithTrajIds extends Logging {
     var start_time =System.currentTimeMillis()
     val trajUtil = new Trajectory(sc)
     //get trajsByEdges_RDD
-    val trajsByEdges_RDD: RDD[(Long, Array[Long])] = trajUtil.loadTrajectoryFromDataSource(traj_data_path)
+    val trajsByEdges_RDD: RDD[(Long, Array[Long])] = trajUtil.loadTrajectoryFromDataSource(Parameters.traj_data_path)
     var end_time = System.currentTimeMillis()
     logInfo("loadTrajectoryFromDataSource use time:"+(end_time - start_time))
 
     val graph = new Graph(sc)
     //get edges_RDD
-    val edges_RDD: RDD[(Long, (Long, Long))] = graph.loadEdgeFromDataSource(edge_data_path)
+    val edges_RDD: RDD[(Long, (Long, Long))] = graph.loadEdgeFromDataSource(Parameters.edge_data_path)
     val edges_broadcast: Broadcast[Map[Long, (Long, Long)]] = sc.broadcast(edges_RDD.collect().toMap)
 
 
     start_time =System.currentTimeMillis()
     //transfer traj's edge to vertex
-    val trajsByVertexs_RDD: RDD[(Long, Iterable[Long])] = Trajectory.transferToVertex(trajsByEdges_RDD,edges_broadcast).cache()
+    val trajsByVertexs_RDD: RDD[(Long, Iterable[Long])] = Trajectory.transferToByVertex(trajsByEdges_RDD,edges_broadcast).cache()
 //    val trajsByVertexs: Array[(Long, Iterable[Long])] = trajsByVertexs_RDD.collect()
     //the data is big and if you broadcast it,sc will use disk instead of memory
     end_time = System.currentTimeMillis()
@@ -134,7 +132,7 @@ object GetODPairWithTrajIds extends Logging {
 
 
     //sort by traj's size and save
-    odpairWithAlltrajs.map(x => (x._2.size,x)).sortByKey(false).saveAsTextFile(HDFS_BASE_RESULT_PATH+"odpairWithAlltrajs")
+    odpairWithAlltrajs.map(x => (x._2.size,x)).sortByKey(false).saveAsTextFile(Parameters.HDFS_BASE_RESULT_DIR+"odpairWithAlltrajs")
     sc.stop()
   }
 
@@ -173,5 +171,7 @@ object GetODPairWithTrajIds extends Logging {
     s_e_list
   }
 
-  
+
+
+
 }

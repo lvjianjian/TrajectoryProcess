@@ -28,19 +28,17 @@ object RouteCounter extends Logging {
 //        val route_result_path: String = "D:\\lzj_spark_test\\data\\route_result.txt"
 //        val route_path: String = "D:\\lzj_spark_test\\data\\route.txt"
 
-        val traj_data_path: String = "hdfs://node1:9000/user/caojiaqing/JqCao/data/trajectory_beijing_new.txt"
-        val edge_data_path: String = "hdfs://node1:9000/user/caojiaqing/JqCao/data/edges_new.txt"
         val route_result_path: String = "/home/liyang/lvzhongjian/result/route_result.txt"
         val route_path: String = "/home/liyang/lvzhongjian/result/routes.txt"
         val route_frequency_path = "/home/liyang/lvzhongjian/result/route_frequency.txt"
 
         val trajUtil = new Trajectory(sc)
         //get trajs_RDD
-        val trajs_RDD: RDD[(Long, Array[Long])] = trajUtil.loadTrajectoryFromDataSource(traj_data_path)
-        val graph = new Graph(sc)
+        val trajs_RDD: RDD[(Long, Array[Long])] = trajUtil.loadTrajectoryFromDataSource(Parameters.traj_data_path)
 
+        val graph = new Graph(sc)
         //get edges_RDD
-        val edges_RDD: RDD[(Long, (Long, Long))] = graph.loadEdgeFromDataSource(edge_data_path)
+        val edges_RDD: RDD[(Long, (Long, Long))] = graph.loadEdgeFromDataSource(Parameters.edge_data_path)
 
         val edges_broadcast: Broadcast[Map[Long, (Long, Long)]] = sc.broadcast(edges_RDD.collect().toMap)
 

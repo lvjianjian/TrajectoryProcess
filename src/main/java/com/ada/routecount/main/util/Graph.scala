@@ -27,6 +27,14 @@ class Graph(@transient val sc: SparkContext) extends Logging with LoaderRoadNetw
     }
   }
 
+  def loadVertexFromDataSource2(vertexFile: String): RDD[Vertex] = {
+    logInfo("Loading Vertex data from %s".format(vertexFile))
+    sc.textFile(vertexFile).map {
+      x =>  val temp = x.split("\t")
+        new Vertex(temp(0).toLong, new Point(temp(2).toDouble, temp(1).toDouble))
+    }
+  }
+
   override def loadEdgeFromDataSource(edgeFile: String): RDD[(Long, (Long, Long))] = {
     logInfo("Loading Edge data from %s".format(edgeFile))
     sc.textFile(edgeFile).map {
