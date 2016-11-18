@@ -28,7 +28,7 @@ object GetODPairWithRouteTrie extends Logging {
 
     var start_time = System.currentTimeMillis()
     val trajUtil = new Trajectory(sc)
-    val trajsByVertexes_RDD: RDD[(Long, Array[Long])] = trajUtil.loadTrajectoryFromDataSource2(Parameters.HDFS_NODE_FRONT_PART + "/user/lvzhongjian/data/zhujie/lzj/data_vid.txt").cache()
+    val trajsByVertexes_RDD: RDD[(Long, Array[Long])] = trajUtil.loadTrajectoryFromDataSource3(Parameters.HDFS_NODE_FRONT_PART + "/user/lvzhongjian/data/zhujie/lzj/data_vid.txt").cache()
     var end_time = System.currentTimeMillis()
     logInfo("loadTrajectoryFromDataSource use time:" + (end_time - start_time))
 
@@ -68,14 +68,14 @@ object GetODPairWithRouteTrie extends Logging {
         }).collect()
         println("alltrajs size:"+alltrajsInODPair.length)
         //save to routetrie
-        var rt = RouteTrie.readFromFile("/home/liyang/lvzhongjian/result/routetree_zhujie/%d.obj".format(s_id))
+        var rt = RouteTrie.readFromXml("/home/liyang/lvzhongjian/result/routetree_zhujie/%d.xml".format(s_id))
         if(rt == null)
           rt = RouteTrie(s_id)
         alltrajsInODPair.foreach(vertexids=>rt.addRoute(vertexids.toList))
         val routes: Array[Route] = rt.getAllRoutesToDestination(e_id)
         var sum:Long = 0
         routes.foreach(route=>sum+=route.getRouteFrequency())
-        rt.saveToFile("/home/liyang/lvzhongjian/result/routetree_zhujie")
+        rt.saveToXml("/home/liyang/lvzhongjian/result/routetree_zhujie")
         println("%d to %d,all trajs size is %d".format(s_id,e_id,sum))
     })
     sc.stop()

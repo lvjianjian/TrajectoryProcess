@@ -8,6 +8,12 @@ import scala.collection.mutable
  * Trie node
  */
 class TrieNode(_node_id: Long) extends Serializable{
+
+  /**
+   * 记录routeid
+   */
+  var route_id = -1
+
   /**
    * node_id save vertex_id
    */
@@ -22,9 +28,18 @@ class TrieNode(_node_id: Long) extends Serializable{
    */
   var vertex_ids: List[Long] = _
 
-  private val children: mutable.HashMap[Long, TrieNode] = new mutable.HashMap[Long, TrieNode]()
+  val children: mutable.HashMap[Long, TrieNode] = new mutable.HashMap[Long, TrieNode]()
 
+  /**
+   * if it is a leafnode ,it records a route score
+   * -1 is non-leafnode,other is leafnode
+   */
+  var score:Double = -1
 
+  /**
+   * 如果按点存储，即为node_id,按边存储，需要额外点信息
+   */
+  var end_vertex_id = node_id
 
   /**
    * addChild on this node,non thread safe
@@ -38,6 +53,11 @@ class TrieNode(_node_id: Long) extends Serializable{
       child.freq += 1
     child
   }
+
+  def addChild(trieNode: TrieNode): Unit ={
+    children.put(trieNode.node_id,trieNode)
+  }
+
 
 }
 

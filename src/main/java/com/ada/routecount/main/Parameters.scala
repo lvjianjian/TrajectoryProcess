@@ -16,7 +16,7 @@ object Parameters{
   /**
    * edge data path in hdfs
    */
-  val edge_data_path: String = HDFS_NODE_FRONT_PART+"/user/caojiaqing/JqCao/data/edges_new.txt"
+  val edge_data_path: String = HDFS_NODE_FRONT_PART+"/user/lvzhongjian/data/edges_new.txt"
 
   /**
    * vertex data path in hdfs

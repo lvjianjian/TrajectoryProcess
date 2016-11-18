@@ -37,24 +37,44 @@ class Trajectory(val sc: SparkContext) extends LoaderTrajectory with Logging wit
     }.filter(x => x._2.length > 10)
   }
 
-  //从文件中读取轨迹 返回RDD[(Long//轨迹id,Array[(Long)])//采样点 点id]
-  def loadTrajectoryFromDataSource2(trajectoryFile: String): RDD[(Long, Array[Long])] = {
+  //从文件中读取轨迹 返回RDD[(Long//轨迹id,Array[(Long)]采样点 点id,Array[Long]时间)//]
+  def loadTrajectoryFromDataSource2(trajectoryFile: String): RDD[(Long, Array[Long],Array[Long])] = {
+    logInfo("Loading Trajectory data from %s".format(trajectoryFile))
+    sc.textFile(trajectoryFile).map(x => x.split(",")).filter(x => x(1).toInt > 10).map {
+      temp =>
+        var arrayList: List[Long] = Nil
+        var timeList:List[Long] = Nil
+        var preEdgeId: Long = 0
+        for (i <- 2 until (temp.size,2))  {
+          arrayList = temp(i).toLong :: arrayList
+        }
+        for (i<-(3 until(temp.size,2))){
+          timeList = temp(i).toLong :: timeList
+        }
+        println("" + temp(0) + ",size:"+arrayList.size)
+//        println(arrayList.reverse.toArray.mkString(","))
+        (temp(0).toLong, arrayList.reverse.toArray,timeList.reverse.toArray)
+    }
+  }
+
+  //从文件中读取轨迹 返回RDD[(Long//轨迹id,Array[(Long)]采样点 点id,)//]
+  def loadTrajectoryFromDataSource3(trajectoryFile: String): RDD[(Long, Array[Long])] = {
     logInfo("Loading Trajectory data from %s".format(trajectoryFile))
     sc.textFile(trajectoryFile).map(x => x.split(",")).filter(x => x(1).toInt > 10).map {
       temp =>
         var arrayList: List[Long] = Nil
         var preEdgeId: Long = 0
-        for (i <- 2 until temp.size) {
+        for (i <- 2 until temp.size)  {
           arrayList = temp(i).toLong :: arrayList
         }
         println("" + temp(0) + ",size:"+arrayList.size)
-        println(arrayList.reverse.toArray.mkString(","))
+        //        println(arrayList.reverse.toArray.mkString(","))
         (temp(0).toLong, arrayList.reverse.toArray)
     }
   }
-
-
 }
+
+
 
 object Trajectory {
   /**

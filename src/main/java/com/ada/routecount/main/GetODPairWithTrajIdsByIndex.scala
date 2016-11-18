@@ -50,24 +50,13 @@ object GetODPairWithTrajIdsByIndex extends Logging {
 
     start_time = System.currentTimeMillis()
     //get index about start_vertex_id and it's edgeid
-    val start_with_edges_broadcast: Broadcast[collection.Map[Long, Iterable[Long]]] = sc.broadcast(edges_RDD.map({
-      edge =>
-        val edge_id = edge._1
-        val start_vertex_id = edge._2.x._1
-        (start_vertex_id, edge_id)
-    }).groupByKey().collectAsMap())
+    val start_with_edges_broadcast: Broadcast[collection.Map[Long, Iterable[Long]]] = sc.broadcast(graph.getStartVertexWithEdge(edges_RDD).collectAsMap())
     end_time = System.currentTimeMillis()
     log.info("build start_vertex and edges index spend time " + (end_time - start_time))
 
     //get index about end_vertex_id and it's edgeid
     start_time = System.currentTimeMillis()
-    val end_with_edges_broadcast: Broadcast[collection.Map[Long, Iterable[Long]]] = sc.broadcast(edges_RDD.map({
-      edge =>
-
-        val edge_id = edge._1
-        val end_vertex_id = edge._2.x._2
-        (end_vertex_id, edge_id)
-    }).groupByKey().collectAsMap())
+    val end_with_edges_broadcast: Broadcast[collection.Map[Long, Iterable[Long]]] = sc.broadcast(graph.getEndVertexWithEdge(edges_RDD).collectAsMap())
     end_time = System.currentTimeMillis()
     log.info("build end_vertex and edges index spend time " + (end_time - start_time))
 

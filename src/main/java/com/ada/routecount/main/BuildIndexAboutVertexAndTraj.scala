@@ -20,13 +20,9 @@ object BuildIndexAboutVertexAndTraj extends Logging{
     var start_time = System.currentTimeMillis()
     val trajUtil = new Trajectory(sc)
     //get trajsByVertexes_RDD
-    val trajsByVertexes_RDD: RDD[(Long, Array[Long])] = trajUtil.loadTrajectoryFromDataSource2(Parameters.HDFS_NODE_FRONT_PART+"/user/lvzhongjian/data/zhujie/lzj/data_vid.txt").cache()
+    val trajsByVertexes_RDD: RDD[(Long, Array[Long],Array[Long])] = trajUtil.loadTrajectoryFromDataSource2(Parameters.HDFS_NODE_FRONT_PART+"/user/lvzhongjian/data/zhujie/lzj/data_vid.txt").cache()
     var end_time = System.currentTimeMillis()
     logInfo("loadTrajectoryFromDataSource use time:" + (end_time - start_time))
-
-    val graph = new Graph(sc)
-    //get vertexes_RDD
-    val vertex_RDD: RDD[Vertex] = graph.loadVertexFromDataSource2(Parameters.HDFS_NODE_FRONT_PART+"/user/lvzhongjian/data/zhujie/lzj/roadnetwork/vertices.txt")
 
     start_time = System.currentTimeMillis()
     //bulid index

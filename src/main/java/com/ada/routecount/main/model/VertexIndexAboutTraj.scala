@@ -11,6 +11,7 @@ import scala.io.{BufferedSource, Source}
 
 /**
  * Created by JQ-Cao on 2016/7/28.
+ * also can use in edge
  */
 class VertexIndexAboutTraj(_vertex_id: Long) extends Serializable {
   val vertex_id = _vertex_id
@@ -132,6 +133,16 @@ object VertexIndexAboutTraj {
     getAllIndexs_RDD(fileName, sparkContext).map(x => (x.vertex_id, x))
   }
 
+
+  def getVertexIndexAboutTrajFromString(s:String): VertexIndexAboutTraj ={
+    val split: Array[String] = s.split("\\|")
+    val ve: VertexIndexAboutTraj = VertexIndexAboutTraj(split(0).toLong)
+    val trajidAndSite: Array[String] = split(1).split(",")
+    for (i <-0 until (trajidAndSite.length,2)){
+      ve.addTraj(trajidAndSite(i).toLong,trajidAndSite(i+1).toInt)
+    }
+    ve
+  }
 
   def main(args: Array[String]) {
 //    val vertexIndexAboutTraj: VertexIndexAboutTraj = getFromFile("D:\\吕中剑\\OutlierDetection\\data\\wise2015_data\\lzj\\index_result", 44414)
