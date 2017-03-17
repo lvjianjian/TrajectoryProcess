@@ -2,7 +2,6 @@ package com.ada.routecount.main.model
 
 import java.io.{FileWriter, File}
 
-import breeze.io.TextReader.FileReader
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 

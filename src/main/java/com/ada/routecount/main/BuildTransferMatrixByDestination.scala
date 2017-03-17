@@ -15,13 +15,13 @@ import scala.collection.Map
 /**
  * 根据destination构造转移矩阵
  */
-object BulidTrasferMatrix extends Logging {
+object BuildTransferMatrixByDestination extends Logging {
 
-
-  def main(args: Array[String]) {
-    val dids: Array[Long] = Array("59567301461".toLong,"59567303675".toLong,"60560412767".toLong,"60560415877".toLong)
-
-
+  /**
+    * build matrix,save in hdfs:/user/lvzhongjian/result/transfer_matrix/
+    * @param dids
+    */
+  def buildMartix(dids:Array[Long]): Unit ={
     val conf = new SparkConf().setAppName("BulidTrasferMatrix")
     val sc = new SparkContext(conf)
     logWarning("BulidTrasferMatrix starting")
@@ -29,13 +29,15 @@ object BulidTrasferMatrix extends Logging {
     val edges_RDD: RDD[(Long, (Long, Long))] = graph.loadEdgeFromDataSource(Parameters.edge_data_path)
     val edges_bc: Broadcast[Map[Long, (Long, Long)]] = sc.broadcast(edges_RDD.collectAsMap())
     val vertex_RDD: RDD[Vertex] = graph.loadVertexFromDataSource(Parameters.vertex_data_path)
+    //[endvertexid,edgeids]
     val end_with_edges = graph.getEndVertexWithEdge(edges_RDD).collectAsMap()
-    val edgeIndexAboutTraj_RDD: RDD[VertexIndexAboutTraj] = sc.textFile(Parameters.HDFS_BASE_RESULT_DIR + "edge_index/part*").map(string => VertexIndexAboutTraj.getVertexIndexAboutTrajFromString(string)).cache()
+    val edgeIndexAboutTraj_RDD: RDD[VertexIndexAboutTraj] = sc.textFile(Parameters.HDFS_BASE_RESULT_DIR + "edge_index/part*").map(string => VertexIndexAboutTraj.getVertexIndexAboutTrajFromString(string))
+    //[edgeid,trajids]
     val edge_trajids_RDD: RDD[(Long, VertexIndexAboutTraj)] = edgeIndexAboutTraj_RDD.map(x => (x.vertex_id, x)).cache()
     val trajUtil = new Trajectory(sc)
     //get trajsByEdges_RDD
-    val trajsByEdges_RDD: RDD[(Long, Array[Long])] = trajUtil.loadTrajectoryFromDataSource(Parameters.traj_data_path).cache()
-
+    val trajsByEdges_RDD: RDD[(Long, Array[Long])] = trajUtil.loadTrajectoryFromDataSource(Parameters.traj_data_path)
+//    println(trajsByEdges_RDD.count())
     dids.foreach({
       did =>
         logWarning("BulidTrasferMatrix for %d".format(did))
@@ -51,7 +53,7 @@ object BulidTrasferMatrix extends Logging {
         val broadcast = sc.broadcast(collect)
 
         trajsByEdges_RDD.filter(x => broadcast.value.keySet.contains(x._1)).flatMap({
-          x =>
+            x =>
             val site: Int = broadcast.value.get(x._1).get
             var r: List[(Long, Long, Long)] = Nil //(s_id,e_id,edgeid)
             for (i <- 0 until x._2.length if (i <= site)) {
@@ -62,15 +64,21 @@ object BulidTrasferMatrix extends Logging {
             r
         }).map(x => (x, 1)).reduceByKey(_ + _).map({
           x =>
-            x._1.productIterator.mkString(",")+","+x._2
-        }).coalesce(1).saveAsTextFile(Parameters.HDFS_BASE_RESULT_DIR+"transfermatrix_%d".format(did))
+            x._1.productIterator.mkString(",")+","+x._2 // (s_id,e_id,edgeid,num)
+        }).coalesce(1).saveAsTextFile(Parameters.HDFS_BASE_RESULT_DIR+"transfer_matrix/"+"transfermatrix_%d".format(did))
+
         broadcast.unpersist()
     })
-
-
     logWarning("BulidTrasferMatrix stoping")
     edges_bc.unpersist()
     sc.stop()
+  }
 
+
+  def main(args: Array[String]) {
+    val dids: Array[Long] = Array(
+      59565219109L,59567301461L,60560412767L,60560415595L,60560415592L,60560415877L,59567301135L,59567303675L,
+      59566302333L,59566201416L,59565221575L)
+    buildMartix(dids)
   }
 }

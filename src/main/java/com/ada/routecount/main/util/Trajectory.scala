@@ -1,7 +1,5 @@
 package com.ada.routecount.main.util
 
-import breeze.util.ArrayUtil
-import org.apache.commons.lang.ArrayUtils
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, Logging, SparkContext}
